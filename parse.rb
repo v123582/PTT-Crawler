@@ -13,9 +13,10 @@ reply = dom_tree.css('#main-container #main-content .push').text
 
 header = header.split("時間")
 time = header[1];
-
 header = header[0].split("標題")
 title = header[1];
+header = header[0].split("作者")
+author = header[1];
 header = dom_tree.css('#main-container #main-content .article-metaline').text
 img_doms = dom_tree.css('#main-container').text
 img_doms = img_doms.gsub('看板Gossiping', '') 

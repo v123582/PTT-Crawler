@@ -16,9 +16,13 @@ start_page = start_page[1]
 start_page = start_page.to_i + 1
 #356
 count =0
+exist_flag = 0
+flag = false
+last_author = ''
+#start_page = 4991
 for i in start_page.downto(0) do
 `wget -P index --load-cookies=cookie.txt https://www.ptt.cc/bbs/Gossiping/index#{i}.html --no-check-certifica`
-puts "#{i}"
+#puts "#{i}"
 html = open("index/index#{i}.html").read
 dom_tree = Nokogiri::HTML(html)
 content_doms = dom_tree.css('#main-container .r-list-container .r-ent .title a')
@@ -35,24 +39,48 @@ content_doms = dom_tree.css('#main-container .r-list-container .r-ent .title a')
 		border = dom_tree.css('#main-container #main-content .article-metaline-right').text
 		reply = dom_tree.css('#main-container #main-content .push').text
 
-		header = header.split("時間")
-		time = header[1];
-	    time = Time.parse(time).strftime("%Y%m%d%H%M%S").to_s
+		if dom_tree.css('#main-container #main-content .article-metaline .article-meta-tag').text != "作者標題時間"
+			count = count +1
+			next
+		end	
+
+		author = dom_tree.css('#main-container #main-content .article-metaline .article-meta-value')[0].text
+		title = dom_tree.css('#main-container #main-content .article-metaline .article-meta-value')[1].text
+		time = dom_tree.css('#main-container #main-content .article-metaline .article-meta-value')[2].text
+
+
+		time = Time.parse(time).strftime("%Y%m%d%H%M%S").to_s
 	    dict = time.to_s[0..3]+time.to_s[4..5]
 	    now = Time.new.to_s[0..3]+Time.new.to_s[5..6]
-	    puts "----->#{time.to_i}"
-		if time.to_i <= 20140816183000 or File.exist?("page/#{time}.htm")
-			puts "ending"
+	    #puts "----->#{time.to_i}"
+
+        
+
+		if time.to_i <= 20140816183000 
+			#puts time.to_i <= 20140816183000
+			#puts "ending"
+			flag = true
 			break
 		end
+		if File.exist?("page/#{time}.htm")
+			exist_flag = exist_flag +1
+			#puts "************#{exist_flag}"
+			if exist_flag == 3
+				flag = true
+				break
+			end
+		end
+
+
+
+		last_author = author 
 		`wget -O page/#{time}.htm --load-cookies=cookie.txt -c https://www.ptt.cc#{x} --no-check-certifica`
 		sleep(0.1)
 		count = count +1
 	    
 	end
-	if time.to_i <= 20140816183000 or File.exist?("page/#{time}.htm")
-		puts "ending"
-	break
+	if flag
+		break
 	end
 end
 `rm -rf index`
