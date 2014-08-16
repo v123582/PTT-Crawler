@@ -15,22 +15,19 @@ start_page = start_page[0].split("index")
 start_page = start_page[1]
 start_page = start_page.to_i + 1
 #356
-for i in 4680..4680
-`wget -P index --load-cookies=cookie.txt https://www.ptt.cc/bbs/Gossiping/index#{i}.html --no-check-certifica`
-puts "#{i}"
-sleep(0.1)
-end
 count =0
-for i in 4680..4680
+for i in start_page.downto(0) do
+`wget -P index --load-cookies=cookie.txt https://www.ptt.cc/bbs/Gossiping/index#{i}.html --no-check-certifica`
 puts "#{i}"
 html = open("index/index#{i}.html").read
 dom_tree = Nokogiri::HTML(html)
 content_doms = dom_tree.css('#main-container .r-list-container .r-ent .title a')
+	
+   	for j in (content_doms.size-1).downto(0)
 
-   	for j in 0..(content_doms.size-1)
 		x=content_doms[j].attr('href')
-		`wget -O down/#{count}.htm --load-cookies=cookie.txt -c https://www.ptt.cc#{x} l --no-check-certifica`
-		puts "#{j}"
+		`wget -O down/#{count}.htm --load-cookies=cookie.txt -c https://www.ptt.cc#{x} --no-check-certifica`
+		puts "----->#{j}"
 	    html = open("down/#{count}.htm").read
 		dom_tree = Nokogiri::HTML(html)
 		img_doms = dom_tree.css('#main-container').text
@@ -43,19 +40,22 @@ content_doms = dom_tree.css('#main-container .r-list-container .r-ent .title a')
 	    time = Time.parse(time).strftime("%Y%m%d%H%M%S").to_s
 	    dict = time.to_s[0..3]+time.to_s[4..5]
 	    now = Time.new.to_s[0..3]+Time.new.to_s[5..6]
-		if dict.to_i == now.to_i
+	    puts "----->#{time.to_i}"
+		if time.to_i <= 20140816183000 or File.exist?("page/#{time}.htm")
 			puts "ending"
 			break
 		end
-		`wget -O page/#{dict}/#{time}.htm --load-cookies=cookie.txt -c https://www.ptt.cc#{x} l --no-check-certifica`
+		`wget -O page/#{time}.htm --load-cookies=cookie.txt -c https://www.ptt.cc#{x} --no-check-certifica`
 		sleep(0.1)
 		count = count +1
 	    
 	end
-	if dict.to_i == now.to_i
+	if time.to_i <= 20140816183000 or File.exist?("page/#{time}.htm")
 		puts "ending"
-		break
+	break
 	end
 end
 `rm -rf index`
 `rm -rf down`
+`rm cookie.txt`
+`rm over18`
